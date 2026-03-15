@@ -172,7 +172,7 @@
 
     <service name="BankingService">
         <port name="BankingServicePort" binding="tns:BankingServicePortBinding">
-            <soap:address location="http://localhost:8080/banking-service/ws/banking"/>
+            <soap:address location="http://localhost:8080/banking-service/banking"/>
         </port>
     </service>
 

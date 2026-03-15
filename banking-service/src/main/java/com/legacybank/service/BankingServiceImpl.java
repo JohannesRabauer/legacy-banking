@@ -6,10 +6,14 @@ import com.legacybank.model.TransactionRecord;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.jws.WebService;
+import javax.servlet.ServletContext;
+import javax.xml.ws.WebServiceContext;
+import javax.xml.ws.handler.MessageContext;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 @WebService(
         serviceName = "BankingService",
@@ -18,17 +22,53 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
         endpointInterface = "com.legacybank.service.BankingService")
 public class BankingServiceImpl implements BankingService {
 
-    @Autowired
     private DatabaseManager databaseManager;
 
+    @Resource
+    private WebServiceContext webServiceContext;
+
     public BankingServiceImpl() {
-        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+    }
+
+    private DatabaseManager resolveDatabaseManager() {
+        if (databaseManager != null) {
+            return databaseManager;
+        }
+
+        if (webServiceContext == null || webServiceContext.getMessageContext() == null) {
+            return null;
+        }
+
+        Object servletContextObj = webServiceContext.getMessageContext().get(MessageContext.SERVLET_CONTEXT);
+        if (!(servletContextObj instanceof ServletContext)) {
+            return null;
+        }
+
+        ServletContext servletContext = (ServletContext) servletContextObj;
+        WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        if (ctx == null) {
+            return null;
+        }
+
+        Object bean = ctx.getBean("databaseManager");
+        if (bean instanceof DatabaseManager) {
+            databaseManager = (DatabaseManager) bean;
+            return databaseManager;
+        }
+
+        return null;
     }
 
     public AccountInfo getAccountInfo(String accountNumber) {
         System.out.println("getAccountInfo called for: " + accountNumber);
         try {
-            AccountInfo info = databaseManager.getAccountInfo(accountNumber);
+            DatabaseManager db = resolveDatabaseManager();
+            if (db == null) {
+                System.err.println("DatabaseManager is not available");
+                return new AccountInfo(accountNumber, "NOT FOUND", 0.0);
+            }
+
+            AccountInfo info = db.getAccountInfo(accountNumber);
             if (info == null) {
                 return new AccountInfo(accountNumber, "NOT FOUND", 0.0);
             }
@@ -42,7 +82,12 @@ public class BankingServiceImpl implements BankingService {
     public double getBalance(String accountNumber) {
         System.out.println("getBalance called for: " + accountNumber);
         try {
-            return databaseManager.getBalance(accountNumber);
+            DatabaseManager db = resolveDatabaseManager();
+            if (db == null) {
+                System.err.println("DatabaseManager is not available");
+                return -1.0;
+            }
+            return db.getBalance(accountNumber);
         } catch (Exception e) {
             System.err.println("getBalance service error: " + e.getMessage());
             return -1.0;
@@ -63,7 +108,12 @@ public class BankingServiceImpl implements BankingService {
         }
 
         try {
-            return databaseManager.transfer(fromAccount.trim(), toAccount.trim(), amount, description);
+            DatabaseManager db = resolveDatabaseManager();
+            if (db == null) {
+                System.err.println("DatabaseManager is not available");
+                return false;
+            }
+            return db.transfer(fromAccount.trim(), toAccount.trim(), amount, description);
         } catch (Exception e) {
             System.err.println("transfer service error: " + e.getMessage());
             return false;
@@ -73,7 +123,12 @@ public class BankingServiceImpl implements BankingService {
     public List<TransactionRecord> getTransactionHistory(String accountNumber) {
         System.out.println("getTransactionHistory called for: " + accountNumber);
         try {
-            return databaseManager.getTransactionHistory(accountNumber);
+            DatabaseManager db = resolveDatabaseManager();
+            if (db == null) {
+                System.err.println("DatabaseManager is not available");
+                return new ArrayList<TransactionRecord>();
+            }
+            return db.getTransactionHistory(accountNumber);
         } catch (Exception e) {
             System.err.println("getTransactionHistory service error: " + e.getMessage());
             return new ArrayList<TransactionRecord>();

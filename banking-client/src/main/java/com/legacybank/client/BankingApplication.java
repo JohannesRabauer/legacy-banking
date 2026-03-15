@@ -1,6 +1,7 @@
 package com.legacybank.client;
 
 import com.legacybank.client.stub.BankingService;
+import com.legacybank.client.stub.BankingService_Service;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -8,8 +9,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
-import javax.xml.ws.soap.SOAPBinding;
+
+import java.net.URL;
 
 public class BankingApplication {
 
@@ -20,12 +21,18 @@ public class BankingApplication {
         }
 
         try {
+            URL localWsdl = BankingApplication.class.getClassLoader().getResource("wsdl/banking.wsdl");
+            if (localWsdl == null) {
+            throw new IllegalStateException("Local WSDL resource not found: wsdl/banking.wsdl");
+            }
+
             QName serviceName = new QName("http://legacybank.com/banking", "BankingService");
-            QName portName = new QName("http://legacybank.com/banking", "BankingServicePort");
-            Service service = Service.create(serviceName);
-            service.addPort(portName, SOAPBinding.SOAP11HTTP_BINDING,
-                "http://localhost:8080/banking-service/ws/banking");
-            final BankingService port = service.getPort(portName, BankingService.class);
+            BankingService_Service service = new BankingService_Service(localWsdl, serviceName);
+            final BankingService port = service.getBankingServicePort();
+
+            ((BindingProvider) port).getRequestContext().put(
+                BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+                    "http://localhost:8080/banking-service/banking");
 
             ((BindingProvider) port).getRequestContext().put(
                 "com.sun.xml.ws.connect.timeout", Integer.valueOf(4000));

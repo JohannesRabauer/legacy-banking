@@ -1,0 +1,48 @@
+version: "2.1"
+
+services:
+  postgres:
+    image: postgres:9.3
+    container_name: legacy-banking-db
+    environment:
+      POSTGRES_DB: bankdb
+      POSTGRES_USER: bankuser
+      POSTGRES_PASSWORD: bankpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bankuser -d bankdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  banking-service:
+    build:
+      context: ./banking-service
+      dockerfile: Dockerfile
+    container_name: legacy-banking-service
+    environment:
+      DB_HOST: postgres
+      DB_USER: bankuser
+      DB_PASSWORD: bankpassword
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q -O - http://localhost:8080/banking-service/ws/banking?wsdl >/dev/null 2>&1 || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+volumes:
+  postgres_data:

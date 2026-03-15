@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:tns="http://legacybank.com/banking"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://legacybank.com/banking"
+    name="BankingService">
+
+    <types>
+        <xsd:schema targetNamespace="http://legacybank.com/banking">
+
+            <xsd:complexType name="accountInfo">
+                <xsd:sequence>
+                    <xsd:element name="accountNumber" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="ownerName" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="balance" type="xsd:double"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="transactionRecord">
+                <xsd:sequence>
+                    <xsd:element name="id" type="xsd:long"/>
+                    <xsd:element name="fromAccount" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="toAccount" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="amount" type="xsd:double"/>
+                    <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+                    <xsd:element name="transactionDate" type="xsd:string" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:element name="getAccountInfo">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="accountNumber" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getAccountInfoResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="return" type="tns:accountInfo" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="getBalance">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="accountNumber" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getBalanceResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="return" type="xsd:double"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="transfer">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="fromAccount" type="xsd:string"/>
+                        <xsd:element name="toAccount" type="xsd:string"/>
+                        <xsd:element name="amount" type="xsd:double"/>
+                        <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="transferResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="return" type="xsd:boolean"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="getTransactionHistory">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="accountNumber" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getTransactionHistoryResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="return" type="tns:transactionRecord" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+        </xsd:schema>
+    </types>
+
+    <message name="getAccountInfo">
+        <part name="parameters" element="tns:getAccountInfo"/>
+    </message>
+    <message name="getAccountInfoResponse">
+        <part name="parameters" element="tns:getAccountInfoResponse"/>
+    </message>
+
+    <message name="getBalance">
+        <part name="parameters" element="tns:getBalance"/>
+    </message>
+    <message name="getBalanceResponse">
+        <part name="parameters" element="tns:getBalanceResponse"/>
+    </message>
+
+    <message name="transfer">
+        <part name="parameters" element="tns:transfer"/>
+    </message>
+    <message name="transferResponse">
+        <part name="parameters" element="tns:transferResponse"/>
+    </message>
+
+    <message name="getTransactionHistory">
+        <part name="parameters" element="tns:getTransactionHistory"/>
+    </message>
+    <message name="getTransactionHistoryResponse">
+        <part name="parameters" element="tns:getTransactionHistoryResponse"/>
+    </message>
+
+    <portType name="BankingService">
+        <operation name="getAccountInfo">
+            <input message="tns:getAccountInfo"/>
+            <output message="tns:getAccountInfoResponse"/>
+        </operation>
+        <operation name="getBalance">
+            <input message="tns:getBalance"/>
+            <output message="tns:getBalanceResponse"/>
+        </operation>
+        <operation name="transfer">
+            <input message="tns:transfer"/>
+            <output message="tns:transferResponse"/>
+        </operation>
+        <operation name="getTransactionHistory">
+            <input message="tns:getTransactionHistory"/>
+            <output message="tns:getTransactionHistoryResponse"/>
+        </operation>
+    </portType>
+
+    <binding name="BankingServicePortBinding" type="tns:BankingService">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+        <operation name="getAccountInfo">
+            <soap:operation soapAction=""/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+        </operation>
+
+        <operation name="getBalance">
+            <soap:operation soapAction=""/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+        </operation>
+
+        <operation name="transfer">
+            <soap:operation soapAction=""/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+        </operation>
+
+        <operation name="getTransactionHistory">
+            <soap:operation soapAction=""/>
+            <input><soap:body use="literal"/></input>
+            <output><soap:body use="literal"/></output>
+        </operation>
+    </binding>
+
+    <service name="BankingService">
+        <port name="BankingServicePort" binding="tns:BankingServicePortBinding">
+            <soap:address location="http://localhost:8080/banking-service/ws/banking"/>
+        </port>
+    </service>
+
+</definitions>
